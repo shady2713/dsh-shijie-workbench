@@ -21,7 +21,7 @@ M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 4. 1.2→1.3 数据库迁移：旧 SQLite 文件含 `schema_migrations='1.2'` 和旧 `jobs` 表，迁移后 `pragma table_info(jobs)` 含 `claim_generation`、版本变 1.3、旧 job 行仍可读。
 5. 认领租约：第二次 claim 后 `claim_generation=2`；旧 claim 的 `complete` 抛 stale、`heartbeat` 抛 lease；新 claim 可心跳并完成，`workflow_events` 的 `job.completed` 只出现 1 条。
 6. 重复完成：同一 claim 二次 `complete` 返回 `already_completed:true`，完成事件仍只有 1 条。
-7. 媒体全链路：ffmpeg 生成 `testsrc2 1.5s + 黑场 1.5s` 的 3 秒 320×240 10fps 测试视频，放入 `dataDir/inbox`；`media.acquire` 成功且产物文件存在、字节数和 sha256 与 `media`/`artifacts` 一致；`media.probe` 报告 CFR 且时长 >2.5 秒；`media.overview` 使用 v1.3 变化取帧，帧数 ≤3，`quality_json` 含 `trigger`/`change_score`/`scene_cut_score` 等，包含 `FIRST_FRAME` 与 `SCENE_CUT`（testsrc2→黑场的 scdet 分数 39.572，归一化 0.3957，高于默认 0.30）；`SAMPLED` 覆盖数等于帧数；`media.sample` 按固定时间戳抽 3 帧，`listFrames` 通过 `segments` 关联可见。
+7. 媒体全链路：ffmpeg 生成 `testsrc2 1.5s + 黑场 1.5s` 的 3 秒 320×240 10fps 测试视频，放入 `dataDir/inbox`；`media.acquire` 成功且产物文件存在、字节数和 sha256 与 `media`/`artifacts` 一致；`media.probe` 报告 CFR 且时长 >2.5 秒；`media.overview` 使用 v1.3 变化取帧，帧数 ≤3，`quality_json` 含 `trigger`/`change_score`/`scene_cut_score` 等，包含 `FIRST_FRAME` 与 `SCENE_CUT`（testsrc2→黑场的 scdet 分数 39.572，归一化 0.3957，高于当前默认 0.03，也高于初始 0.30）；`SAMPLED` 覆盖数等于帧数；`media.sample` 按固定时间戳抽 3 帧，`listFrames` 通过 `segments` 关联可见。
 8. 崩溃恢复：`tests/fixtures/crash-worker.ts` 领取 `media.acquire` 后直接退出（`jobs.status=RUNNING`、`claim_generation=1`）；把租约强制过期后再次 `runJobs(1)` 重认领并成功（attempt=2、`claim_generation=2`），`media` 与 media artifact 各 1 行、文件字节和 sha256 一致；再次运行返回空数组，证明不会重复产出。
 9. `m2-sampling.test.ts` 的 5 个纯函数测试：最小间隔（变化在 0.2/0.4 秒不保留、到 0.6 秒才保留）、静止场景按最大间隔保留、场景切换绕过最小间隔、候选数截断、v1.2 固定间隔回退。
 
