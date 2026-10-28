@@ -4,6 +4,11 @@
   "description": "Shijie aerial footage and photo sourcing workbench as a DeepSeek Harness plugin (M2 slice).",
   "license": "UNLICENSED",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shady2713/dsh-shijie-workbench.git"
+  },
+  "homepage": "https://github.com/shady2713/dsh-shijie-workbench#readme",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

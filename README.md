@@ -15,6 +15,19 @@ npm run build
 dsh plugin --profile <profile> add <本目录绝对路径>
 ```
 
+### 从 GitHub 安装
+
+公开仓库：<https://github.com/shady2713/dsh-shijie-workbench>
+
+```
+git clone https://github.com/shady2713/dsh-shijie-workbench.git
+cd dsh-shijie-workbench
+npm install
+dsh plugin --profile <profile> add <克隆目录的绝对路径>
+```
+
+`npm install` 会通过 `prepare` 自动执行 `npm run build`。安装后启动该 profile，调用 `shijie_capabilities` 应返回 `schema_version: "1.3"` 和 `job_executor.state: "AVAILABLE"`。
+
 `package.json` 的 `dsh.bundle.patch` 指向 `cordis.patch.yml`，安装后会自动并入 profile。数据库默认在 `~/.dsh/shijie-workbench/workbench.sqlite`，可用配置项 `dataDir` 修改。
 
 ### 分发到其他电脑
