@@ -1,0 +1,528 @@
+schema_version: '1.3'
+operations:
+- operation_id: getCapabilities
+  method: GET
+  path: /v1/capabilities
+  request_schema: null
+  response_schema: Response_CapabilityRecordList
+  roles:
+  - agent
+  - reviewer
+  cli: doctor --json
+- operation_id: listTasks
+  method: GET
+  path: /v1/tasks
+  request_schema: null
+  response_schema: Response_TaskSummaryList
+  roles:
+  - agent
+  - reviewer
+  cli: task list
+- operation_id: createTask
+  method: POST
+  path: /v1/tasks
+  request_schema: TaskSpec
+  response_schema: Response_TaskDetail
+  roles:
+  - agent
+  - reviewer
+  cli: task create --file FILE
+- operation_id: getTask
+  method: GET
+  path: /v1/tasks/{task_id}
+  request_schema: null
+  response_schema: Response_TaskDetail
+  roles:
+  - agent
+  - reviewer
+  cli: task status TASK_ID
+- operation_id: reviseTask
+  method: POST
+  path: /v1/tasks/{task_id}/revisions
+  request_schema: TaskSpec
+  response_schema: Response_TaskDetail
+  roles:
+  - reviewer
+  cli: null
+- operation_id: resumeTask
+  method: POST
+  path: /v1/tasks/{task_id}/resume
+  request_schema: null
+  response_schema: Response_TaskDetail
+  roles:
+  - agent
+  - reviewer
+  cli: task resume TASK_ID
+- operation_id: closeTask
+  method: POST
+  path: /v1/tasks/{task_id}/close
+  request_schema: null
+  response_schema: Response_TaskDetail
+  roles:
+  - agent
+  - reviewer
+  cli: task close TASK_ID
+- operation_id: getNextAction
+  method: GET
+  path: /v1/tasks/{task_id}/next
+  request_schema: null
+  response_schema: Response_NextAction
+  roles:
+  - agent
+  - reviewer
+  cli: task next TASK_ID
+- operation_id: getSearchPlan
+  method: GET
+  path: /v1/tasks/{task_id}/search-plan
+  request_schema: null
+  response_schema: Response_SearchPlanData
+  roles:
+  - agent
+  - reviewer
+  cli: search plan TASK_ID
+- operation_id: registerSource
+  method: POST
+  path: /v1/sources
+  request_schema: SourceCreate
+  response_schema: Response_SourceDetail
+  roles:
+  - agent
+  - reviewer
+  cli: source add --file FILE
+- operation_id: listSources
+  method: GET
+  path: /v1/sources
+  request_schema: null
+  response_schema: Response_SourceDetailList
+  roles:
+  - agent
+  - reviewer
+  cli: source list --task TASK_ID
+- operation_id: getSource
+  method: GET
+  path: /v1/sources/{source_id}
+  request_schema: null
+  response_schema: Response_SourceDetail
+  roles:
+  - agent
+  - reviewer
+  cli: source get SOURCE_ID
+- operation_id: listSourceVariants
+  method: GET
+  path: /v1/sources/{source_id}/variants
+  request_schema: null
+  response_schema: Response_SourceVariants
+  roles:
+  - agent
+  - reviewer
+  cli: source variants SOURCE_ID
+- operation_id: verifySource
+  method: POST
+  path: /v1/sources/{source_id}/verification
+  request_schema: SourceVerification
+  response_schema: Response_MutationAck
+  roles:
+  - agent
+  - reviewer
+  cli: source verify SOURCE_ID --file FILE
+- operation_id: proposeCaptureAssessment
+  method: POST
+  path: /v1/capture-assessments
+  request_schema: CaptureAssessmentCreate
+  response_schema: Response_MutationAck
+  roles:
+  - agent
+  - reviewer
+  cli: capture propose --file FILE
+- operation_id: decideCaptureAssessment
+  method: POST
+  path: /v1/capture-assessments/{assessment_id}/decisions
+  request_schema: CaptureDecision
+  response_schema: Response_MutationAck
+  roles:
+  - reviewer
+  cli: null
+- operation_id: recordCaptureException
+  method: POST
+  path: /v1/capture-exceptions
+  request_schema: CaptureException
+  response_schema: Response_MutationAck
+  roles:
+  - reviewer
+  cli: null
+- operation_id: recordQualityAssessment
+  method: POST
+  path: /v1/quality-assessments
+  request_schema: QualityAssessmentCreate
+  response_schema: Response_MutationAck
+  roles:
+  - agent
+  - reviewer
+  cli: quality propose --file FILE
+- operation_id: resolveObservations
+  method: POST
+  path: /v1/observation-resolutions
+  request_schema: ObservationResolution
+  response_schema: Response_MutationAck
+  roles:
+  - reviewer
+  cli: null
+- operation_id: getFrame
+  method: GET
+  path: /v1/frames/{frame_id}
+  request_schema: null
+  response_schema: Response_FrameDetail
+  roles:
+  - agent
+  - reviewer
+  cli: frame get FRAME_ID
+- operation_id: listFrames
+  method: GET
+  path: /v1/tasks/{task_id}/frames
+  request_schema: null
+  response_schema: Response_FrameDetailList
+  roles:
+  - agent
+  - reviewer
+  cli: frame list TASK_ID
+- operation_id: listCoverage
+  method: GET
+  path: /v1/tasks/{task_id}/coverage
+  request_schema: null
+  response_schema: Response_CoverageRecordList
+  roles:
+  - agent
+  - reviewer
+  cli: coverage list TASK_ID
+- operation_id: listSegments
+  method: GET
+  path: /v1/media/{media_id}/segments
+  request_schema: null
+  response_schema: Response_SegmentRecordList
+  roles:
+  - agent
+  - reviewer
+  cli: media segments MEDIA_ID
+- operation_id: listOverlaps
+  method: GET
+  path: /v1/tasks/{task_id}/overlaps
+  request_schema: null
+  response_schema: Response_OverlapRecordList
+  roles:
+  - agent
+  - reviewer
+  cli: overlap list TASK_ID
+- operation_id: submitJob
+  method: POST
+  path: /v1/jobs
+  request_schema: JobRequest
+  response_schema: Response_JobSummary
+  roles:
+  - agent
+  - reviewer
+  cli: job submit --file FILE
+- operation_id: listJobs
+  method: GET
+  path: /v1/jobs
+  request_schema: null
+  response_schema: Response_JobSummaryList
+  roles:
+  - agent
+  - reviewer
+  cli: job list --task TASK_ID
+- operation_id: getJob
+  method: GET
+  path: /v1/jobs/{job_id}
+  request_schema: null
+  response_schema: Response_JobSummary
+  roles:
+  - agent
+  - reviewer
+  cli: job status JOB_ID
+- operation_id: cancelJob
+  method: POST
+  path: /v1/jobs/{job_id}/cancel
+  request_schema: null
+  response_schema: Response_JobSummary
+  roles:
+  - agent
+  - reviewer
+  cli: job cancel JOB_ID
+- operation_id: getNextAgentRequest
+  method: GET
+  path: /v1/agent-requests/next
+  request_schema: null
+  response_schema:
+  - Response_AgentRequestRecord
+  - Response_EmptyData
+  roles:
+  - agent
+  cli: agent next
+- operation_id: claimAgentRequest
+  method: POST
+  path: /v1/agent-requests/{request_id}/claim
+  request_schema: null
+  response_schema: Response_AgentClaimData
+  roles:
+  - agent
+  cli: agent claim REQUEST_ID
+- operation_id: submitAgentResponse
+  method: POST
+  path: /v1/agent-requests/{request_id}/responses
+  request_schema: AgentResponse
+  response_schema: Response_MutationAck
+  roles:
+  - agent
+  cli: agent submit REQUEST_ID --file FILE
+- operation_id: blockAgentRequest
+  method: POST
+  path: /v1/agent-requests/{request_id}/block
+  request_schema: AgentBlock
+  response_schema: Response_MutationAck
+  roles:
+  - agent
+  cli: agent block REQUEST_ID --file FILE
+- operation_id: renewAgentClaim
+  method: POST
+  path: /v1/agent-requests/{request_id}/renew
+  request_schema: AgentRenew
+  response_schema: Response_MutationAck
+  roles:
+  - agent
+  cli: agent renew REQUEST_ID --file FILE
+- operation_id: viewAgentAsset
+  method: POST
+  path: /v1/agent-requests/{request_id}/assets/view
+  request_schema: AssetViewRequest
+  response_schema: Response_DeliveryDescriptor
+  roles:
+  - agent
+  cli: artifact view ASSET_ID --request REQUEST_ID --claim-file FILE
+- operation_id: importEvidence
+  method: POST
+  path: /v1/evidence
+  request_schema: EvidenceImport
+  response_schema: Response_MutationAck
+  roles:
+  - agent
+  - reviewer
+  cli: evidence import --file FILE
+- operation_id: proposePolicy
+  method: POST
+  path: /v1/policy-requests
+  request_schema: PolicyRequest
+  response_schema: Response_MutationAck
+  roles:
+  - agent
+  - reviewer
+  cli: policy propose --file FILE
+- operation_id: listPolicyRequests
+  method: GET
+  path: /v1/policy-requests
+  request_schema: null
+  response_schema: Response_PolicyRequestRecordList
+  roles:
+  - agent
+  - reviewer
+  cli: policy list
+- operation_id: decidePolicy
+  method: POST
+  path: /v1/policy-requests/{request_id}/decisions
+  request_schema: ApprovalDecision
+  response_schema: Response_MutationAck
+  roles:
+  - reviewer
+  cli: null
+- operation_id: createStandingPolicyRule
+  method: POST
+  path: /v1/policy-rules
+  request_schema: PolicyRuleCreate
+  response_schema: Response_MutationAck
+  roles:
+  - reviewer
+  cli: null
+- operation_id: listPolicyRules
+  method: GET
+  path: /v1/policy-rules
+  request_schema: null
+  response_schema: Response_PolicyRuleRecordList
+  roles:
+  - agent
+  - reviewer
+  cli: policy rules
+- operation_id: disableStandingPolicyRule
+  method: POST
+  path: /v1/policy-rules/{rule_id}/disable
+  request_schema: null
+  response_schema: Response_MutationAck
+  roles:
+  - reviewer
+  cli: null
+- operation_id: getBootstrap
+  method: GET
+  path: /v1/bootstrap
+  request_schema: null
+  response_schema: Response_BootstrapStatus
+  roles:
+  - agent
+  - reviewer
+  cli: bootstrap status
+- operation_id: approveBootstrap
+  method: POST
+  path: /v1/bootstrap/approve
+  request_schema: BootstrapApproval
+  response_schema: Response_BootstrapStatus
+  roles:
+  - reviewer
+  cli: null
+- operation_id: listReviewBatches
+  method: GET
+  path: /v1/review-batches
+  request_schema: null
+  response_schema: Response_BatchSummaryList
+  roles:
+  - agent
+  - reviewer
+  cli: batch list --task TASK_ID
+- operation_id: getReviewBatch
+  method: GET
+  path: /v1/review-batches/{batch_id}
+  request_schema: null
+  response_schema: Response_BatchDetail
+  roles:
+  - agent
+  - reviewer
+  cli: batch get BATCH_ID
+- operation_id: recordReview
+  method: POST
+  path: /v1/review-decisions
+  request_schema: ReviewDecision
+  response_schema: Response_MutationAck
+  roles:
+  - reviewer
+  cli: null
+- operation_id: getExport
+  method: GET
+  path: /v1/exports/{export_id}
+  request_schema: null
+  response_schema: Response_ExportDetail
+  roles:
+  - agent
+  - reviewer
+  cli: export get EXPORT_ID
+- operation_id: importUserReference
+  method: POST
+  path: /v1/references
+  request_schema: UserReferenceImport
+  response_schema: Response_MutationAck
+  roles:
+  - reviewer
+  cli: null
+- operation_id: createTaskFeedback
+  method: POST
+  path: /v1/tasks/{task_id}/feedback
+  request_schema: TaskFeedback
+  response_schema: Response_FeedbackRecord
+  roles:
+  - reviewer
+  cli: null
+- operation_id: listFeedback
+  method: GET
+  path: /v1/tasks/{task_id}/feedback
+  request_schema: null
+  response_schema: Response_FeedbackRecordList
+  roles:
+  - agent
+  - reviewer
+  cli: feedback list TASK_ID
+- operation_id: confirmFeedbackImpact
+  method: POST
+  path: /v1/feedback/{feedback_id}/confirm-impact
+  request_schema: FeedbackImpactConfirm
+  response_schema: Response_FeedbackRecord
+  roles:
+  - reviewer
+  cli: null
+- operation_id: enrollReviewer
+  method: POST
+  path: /v1/reviewer/enroll
+  request_schema: ReviewerEnroll
+  response_schema: Response_AuthStatus
+  roles: []
+  cli: null
+- operation_id: loginReviewer
+  method: POST
+  path: /v1/reviewer/login
+  request_schema: ReviewerLogin
+  response_schema: Response_AuthStatus
+  roles: []
+  cli: null
+- operation_id: reauthenticateReviewer
+  method: POST
+  path: /v1/reviewer/reauth
+  request_schema: ReviewerReauth
+  response_schema: Response_AuthStatus
+  roles:
+  - reviewer
+  cli: null
+- operation_id: logoutReviewer
+  method: POST
+  path: /v1/reviewer/logout
+  request_schema: null
+  response_schema: Response_AuthStatus
+  roles:
+  - reviewer
+  cli: null
+- operation_id: getReviewerSession
+  method: GET
+  path: /v1/reviewer/session
+  request_schema: null
+  response_schema: Response_AuthStatus
+  roles:
+  - reviewer
+  cli: null
+- operation_id: claimWorkerJob
+  method: POST
+  path: /v1/internal/jobs/claim
+  request_schema: WorkerClaim
+  response_schema:
+  - Response_WorkerClaimData
+  - Response_EmptyData
+  roles:
+  - worker
+  cli: null
+- operation_id: heartbeatWorkerJob
+  method: POST
+  path: /v1/internal/jobs/{job_id}/heartbeat
+  request_schema: WorkerHeartbeat
+  response_schema: Response_MutationAck
+  roles:
+  - worker
+  cli: null
+- operation_id: completeWorkerJob
+  method: POST
+  path: /v1/internal/jobs/{job_id}/complete
+  request_schema: WorkerComplete
+  response_schema: Response_MutationAck
+  roles:
+  - worker
+  cli: null
+- operation_id: reserveArtifact
+  method: POST
+  path: /v1/internal/jobs/{job_id}/artifacts/reserve
+  request_schema: ArtifactReserve
+  response_schema: Response_ArtifactReservation
+  roles:
+  - worker
+  cli: null
+- operation_id: reserveEntities
+  method: POST
+  path: /v1/internal/jobs/{job_id}/entities/reserve
+  request_schema: EntityReserve
+  response_schema: Response_EntityReservations
+  roles:
+  - worker
+  cli: null
+artifact_content: GET /v1/artifacts/{artifact_id}/content
+health: GET /healthz
+note: CLI init/serve/worker are local process commands; no reviewer mutation CLI.

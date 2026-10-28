@@ -1,0 +1,81 @@
+schema_version: '1.3'
+job_kinds:
+- search.execute
+- source.inspect
+- media.acquire
+- media.probe
+- media.overview
+- media.sample
+- frame.assess
+- frame.dedupe
+- batch.prepare
+- batch.export
+- maintenance.backup
+- search.plan
+- source.route
+- source.capture
+- media.relocate
+- frame.tile
+- media.overlap
+- frame.select
+- feedback.apply
+- image.normalize
+request_types:
+- PLAN_SEARCH
+- SEARCH_QUERY
+- VERIFY_PREVIEW
+- FIND_ACQUIRE_ROUTE
+- NAVIGATE_MEDIA
+- REVIEW_FRAME_BATCH
+- SELECT_REPRESENTATIVES
+- APPLY_FEEDBACK
+on_success:
+  search.plan:
+  - search.execute
+  search.execute:
+  - source.inspect
+  source.inspect:
+  - route_choice
+  source.route:
+  - route_choice
+  media.acquire:
+  - media.probe
+  media.probe:
+  - media.overview:if_video
+  - image.normalize:if_image
+  media.overview:
+  - frame.assess:navigation
+  image.normalize:
+  - frame.assess:navigation
+  media.relocate:
+  - frame.assess:navigation
+  frame.assess:navigation:
+  - media.sample:if_video
+  - native_view_or_frame.tile:if_image
+  media.sample:
+  - frame.assess:native
+  frame.tile:
+  - frame.assess:roi
+  frame.assess:native_or_roi:
+  - aggregate
+  - more_view_or_frame.dedupe
+  frame.dedupe:
+  - frame.select
+  frame.select:
+  - batch.prepare
+  review_decision:
+  - feedback_or_export
+  feedback.apply:
+  - affected_branch_only
+more_view:
+  ROI: frame.tile
+  TILES: frame.tile
+  RESAMPLE: media.sample:video_only
+  RECALIBRATE: capability_check
+  BETTER_VARIANT: source.route
+source_inspect_requires_capture_assessment: true
+event_commit: same_database_transaction_as_completion
+delivery: at_least_once_with_unique_child_idempotency
+waiting: branch_local
+source_only_preview_budget: 3
+next_selection: runnable_before_waiting

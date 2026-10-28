@@ -1,0 +1,116 @@
+schema_version: '1.3'
+task_name: 待用户提供训练对象的首批校准任务
+stage: draft
+mode: assisted
+media_kinds:
+- video
+- image
+target:
+  name: null
+  definition: null
+  target_type: unspecified
+  include: []
+  exclude: []
+  confusers: []
+  positive_example_ids: []
+  negative_example_ids: []
+  minimum_event_duration_s: null
+viewpoint:
+  platforms:
+  - drone
+  sensors:
+  - rgb
+  angles:
+  - nadir
+  - oblique
+  require_capture_evidence: true
+search:
+  languages:
+  - zh
+  - en
+  regions: []
+  paths:
+  - object
+  - scene
+  - activity
+  - author
+  adapter_ids:
+  - agent_browser
+  - commons
+  - approved_https
+  platform_ids:
+  - commons
+  - flickr
+  - bilibili
+  - youtube
+  - skypixel
+  - airvuz
+  - other_https
+sampling:
+  overview_interval_s: 5.0
+  candidate_interval_s: 1.0
+  burst_interval_s: 0.2
+  exploration_fraction: 0.15
+  tile_size_px: 1024
+  tile_overlap_px: 128
+  output_format: png
+  selection_strategy: first_at_or_after
+  change_threshold: 0.35
+  min_frame_interval_s: 0.5
+  max_frame_interval_s: 10.0
+  scene_cut_threshold: 0.30
+  similarity_merge_threshold: 0.92
+  similarity_merge_max_group: 8
+  similarity_merge_time_window_s: 3.0
+image:
+  supported_formats:
+  - JPEG
+  - PNG
+  - WEBP
+  untagged_rgb: assume_srgb_and_record
+  max_image_pixels: 80000000
+  max_image_files: 60
+  max_image_file_bytes: 67108864
+  video_derived: route_to_video_task
+  orthomosaic: separate_task
+  allow_upscale: false
+  allow_generative_repair: false
+quality:
+  minimum_source_width_px: null
+  minimum_object_short_side_px: null
+  uncalibrated_metric_hard_reject: false
+  allow_disputed_capture: false
+limits:
+  max_queries: 12
+  max_sources: 120
+  max_deep_sources: 20
+  max_downloads: 5
+  max_file_bytes: 2147483648
+  max_new_media_bytes: 21474836480
+  max_decoded_duration_s: 7200
+  max_candidate_frames: 300
+  max_review_frames: 60
+  max_agent_requests: 500
+  max_attempts: 3
+  external_api_budget_micro_usd: 0
+  purchase_budget_micro_usd: 0
+  max_visual_images: 1200
+  max_visual_pixels: 1200000000
+  max_review_rounds: 3
+  max_route_discovery_steps: 3
+goal:
+  kind: calibration
+  accepted_frame_count: null
+  minimum_source_families: null
+  maximum_family_fraction: null
+approval_profile: default_deny_unapproved
+scene_requirements: []
+review:
+  audit_fraction: 0.1
+  audit_min_count: 3
+  blind_audit: false
+  representative_strategy: diversity_stratified
+  representative_limit_per_family: null
+  representative_limit_per_scene: 8
+  representative_target_hash_threshold: 0.90
+  uncertain_separate: true
