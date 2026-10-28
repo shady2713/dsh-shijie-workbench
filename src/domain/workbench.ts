@@ -766,7 +766,7 @@ export class Workbench {
           change_threshold: Number(sampling.change_threshold),
           min_frame_interval_s: Number(sampling.min_frame_interval_s ?? 0.5),
           max_frame_interval_s: Number(sampling.max_frame_interval_s ?? 10),
-          scene_cut_threshold: Number(sampling.scene_cut_threshold ?? 0.3),
+          scene_cut_threshold: Number(sampling.scene_cut_threshold ?? 0.03),
           max_candidate_frames: maxFrames,
         })
       : selectFixedFrames(rangeAnalysis, Number(input.interval_s ?? sampling.overview_interval_s ?? 5), maxFrames)

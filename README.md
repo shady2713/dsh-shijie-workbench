@@ -1,4 +1,4 @@
-# dsh-shijie-workbench v0.1.3（M2 切片 + 设置页）
+# dsh-shijie-workbench v0.1.4（M2 切片 + 设置页）
 
 视界工作台的 DeepSeek Harness（DSH）原生插件。规格来源是 `shijie_workbench_v1_2`；`contracts/` 已按 v1.3 取帧契约升级（`schemas.json`、`task.template.yaml`、`operation_catalog.yaml`、`workflow.yaml`、`schema.sql` 及 `1.2-to-1.3` 迁移）。
 
@@ -31,8 +31,8 @@ dsh plugin --profile <profile> add <克隆目录的绝对路径>
 也可以直接下载 Release 的 tarball 安装（无需 clone）：
 
 ```
-curl -L -o dsh-shijie-workbench-0.1.3.tgz https://github.com/shady2713/dsh-shijie-workbench/releases/download/v0.1.3/dsh-shijie-workbench-0.1.3.tgz
-dsh plugin --profile <profile> add ./dsh-shijie-workbench-0.1.3.tgz
+curl -L -o dsh-shijie-workbench-0.1.4.tgz https://github.com/shady2713/dsh-shijie-workbench/releases/download/v0.1.4/dsh-shijie-workbench-0.1.4.tgz
+dsh plugin --profile <profile> add ./dsh-shijie-workbench-0.1.4.tgz
 ```
 
 `package.json` 的 `dsh.bundle.patch` 指向 `cordis.patch.yml`，安装后会自动并入 profile。数据库默认在 `~/.dsh/shijie-workbench/workbench.sqlite`，可用配置项 `dataDir` 修改。
@@ -47,10 +47,10 @@ npm run build
 npm run pack
 ```
 
-把 `plugin/dist/dsh-shijie-workbench-0.1.3.tgz` 复制到目标电脑，在目标电脑执行：
+把 `plugin/dist/dsh-shijie-workbench-0.1.4.tgz` 复制到目标电脑，在目标电脑执行：
 
 ```
-dsh plugin --profile <profile> add <路径>/dsh-shijie-workbench-0.1.3.tgz
+dsh plugin --profile <profile> add <路径>/dsh-shijie-workbench-0.1.4.tgz
 ```
 
 目标电脑需要 DSH `>=0.2.1-rc.2 <0.3.0`，并有一个包含 DSH 基础包的 profile；ffmpeg/ffprobe 需在 PATH 中，或通过 `ffmpegPath`/`ffprobePath` 配置。tarball 已包含 `lib/`、`contracts/`、`skills/` 和 `cordis.patch.yml`，不会包含 `node_modules`；`ajv`、`yaml` 等运行依赖由 pnpm 安装。当前 `package.json` 是 `private: true`，因此默认用 tarball/私有 registry 分发，不发布到公共 npm。安装后启动该 profile，调用 `shijie_capabilities` 应返回 `schema_version: "1.3"` 和 `job_executor.state: "AVAILABLE"`。

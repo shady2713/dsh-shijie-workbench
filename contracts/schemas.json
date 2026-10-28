@@ -400,7 +400,7 @@
               "type": "number",
               "minimum": 0,
               "maximum": 1,
-              "default": 0.3
+              "default": 0.03
             },
             "similarity_merge_threshold": {
               "type": "number",

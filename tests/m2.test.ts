@@ -56,6 +56,7 @@ describe('v1.3 contract', () => {
     delete v13.sampling.burst_interval_s
     expect(contracts.assert('TaskSpec', v13)).toBeTruthy()
     expect(v13.sampling.change_threshold).toBe(0.35)
+    expect(v13.sampling.scene_cut_threshold).toBe(0.03)
 
     const bad = template()
     bad.sampling.change_threshold = 1.5

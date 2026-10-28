@@ -58,7 +58,7 @@ sampling:
   change_threshold: 0.35
   min_frame_interval_s: 0.5
   max_frame_interval_s: 10.0
-  scene_cut_threshold: 0.30
+  scene_cut_threshold: 0.03
   similarity_merge_threshold: 0.92
   similarity_merge_max_group: 8
   similarity_merge_time_window_s: 3.0
