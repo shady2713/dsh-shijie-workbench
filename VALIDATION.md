@@ -11,7 +11,7 @@
 - `npm install`：完成，`prepare` 触发的 `npm run build` 通过。
 - `npm run typecheck`：通过。
 - `npm run build`：通过。
-- `npm test`：8 个测试文件、64 项全部通过（vision 5、plugin 6、agent_tools 15、domain 22、m2 9、m2-sampling 5、client 1、dashboard-route 1），耗时约 3 秒；无失败，只有 `node:sqlite` 的 ExperimentalWarning。
+- `npm test`：8 个测试文件、65 项全部通过（vision 6、plugin 6、agent_tools 15、domain 22、m2 9、m2-sampling 5、client 1、dashboard-route 1），耗时约 3 秒；无失败，只有 `node:sqlite` 的 ExperimentalWarning。
 
 M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 
@@ -37,26 +37,27 @@ M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 
 - `npm install`：成功，`prepare` 触发的 build 通过。
 - `npm run typecheck`：通过。
-- `npm test`：8 个测试文件、64 项全部通过（vision 5、plugin 6、agent_tools 15、domain 22、m2 9、m2-sampling 5、client 1、dashboard-route 1）。
+- `npm test`：8 个测试文件、65 项全部通过（vision 6、plugin 6、agent_tools 15、domain 22、m2 9、m2-sampling 5、client 1、dashboard-route 1）。
 - 临时副本不修改工作区 `package.json`/`package-lock.json`。
 
 ### 宿主集成（隔离 profile，未动用户正在用的 profile）
 
-- 测试 profile：`C:\Users\64576\.dsh\profiles\m15-test`，插件以 `link:E:/xiangmu/03 Video footage acquisition/plugin` 安装，dataDir 指向 `C:/Users/64576/AppData/Local/Temp/shijie-m15-test`。
+- 测试 profile：`C:\Users\64576\.dsh\profiles\m15-test`，插件以 `link:E:/xiangmu/03Video footage acquisition/plugin` 安装，dataDir 指向 `C:/Users/64576/AppData/Local/Temp/shijie-m15-test`。
 - `dsh --profile m15-test --json "只调用 shijie_capabilities 一次..."` 实际加载当前构建并返回：`schema_version: "1.3"`、`job_executor.state: AVAILABLE`（reason 为 “M2 local executor: SQLite queue with claim leases, claim_generation, heartbeat and transactional completion; media jobs run in-process”）、`ffmpeg`/`ffprobe` AVAILABLE、`reviewer_surface` UNSUPPORTED、`host_vision` AVAILABLE。
 - 插件加载测试在真实 Cordis Context（真实 ToolRuntime、SkillRegistry、SystemPrompt）里加载插件：36 个 `shijie_*` 业务工具经真实工具管线执行，参数校验、输出 schema 校验、信封失败、技能注册均通过；工具集中没有 reviewer 操作或用户决定入口。`visionProbe: true` 时另注册 E1 诊断工具。
-- 设置页（视界工作台）宿主集成：在隔离临时 `DSH_HOME`（`C:\Users\64576\AppData\Local\Temp\dsh-home-web-test`）用默认 web 模板创建 `rescue` profile 并安装本插件，`dsh --profile rescue --host 127.0.0.1 --port 53889 --no-open` 启动后：`GET /api/shijie-workbench/status` 返回 200、`application/json; charset=utf-8`、schema 1.3；Playwright 打开设置对话框，侧栏出现“视界工作台”，页面显示任务/作业/媒体/帧/取样/审核导出卡片与最近列表，底部显示“SQLite 本地库 · schema 1.3”。该验证使用临时 profile，未改用户正在用的 profile。
+- 设置页（视界工作台）宿主集成：在隔离临时 `DSH_HOME`（`C:\Users\64576\AppData\Local\Temp\dsh-home-web-test`）用默认 web 模板创建 `rescue` profile 并安装本插件，`dsh --profile rescue --host 127.0.0.1 --port 53901 --no-open` 启动后：`GET /api/shijie-workbench/status` 返回 200、`application/json; charset=utf-8`、schema 1.3；Playwright 打开设置对话框，侧栏出现“视界工作台”，页面显示任务/作业/媒体/帧/取样/审核导出卡片与最近列表，底部显示“SQLite 本地库 · schema 1.3”。该验证使用临时 profile，未改用户正在用的 profile；截图见 `dist/settings-page-verified.png`（本地验证产物，不随包发布）。
 
 ### 分发包（仅本地验证）
 
-- `npm run pack` 成功生成 `dist/dsh-shijie-workbench-0.1.1.tgz`（84.4 KB，33 个文件，包含 `lib/`、`contracts/`、`skills/`、`client.js`、`cordis.patch.yml`，不包含 `node_modules`）。
+- `npm run pack` 成功生成 `dist/dsh-shijie-workbench-0.1.2.tgz`（84.4 KB，33 个文件，包含 `lib/`、`contracts/`、`skills/`、`client.js`、`cordis.patch.yml`，不包含 `node_modules`）。
 - 在干净临时目录执行 `npm install <tarball>` 成功；`import('dsh-shijie-workbench')` 返回 `Config, apply, inject, name` 四个导出。
 - 在临时 `DSH_HOME` 的 `packhead` profile 里 `dsh plugin --profile packhead add <tarball>` 成功；因该临时 profile 没有模型凭据，未完成真实模型工具调用，这一项不算宿主运行验证。
-- `0.1.1` tarball 在另一临时 `DSH_HOME` 的 `rescue` web profile 安装后启动成功：`GET /api/shijie-workbench/status` 返回 200、schema 1.3；Playwright 设置对话框显示“视界工作台”页面和只读概览。证明 `client.js`、`dsh.client`、`exports["./client"]` 被打进包并且在真实 Web 宿主加载。
+- `0.1.2` tarball 在另一临时 `DSH_HOME` 的 `rescue` web profile 安装后启动成功：`GET /api/shijie-workbench/status` 返回 200、schema 1.3；Playwright 设置对话框显示“视界工作台”页面和只读概览。证明 `client.js`、`dsh.client`、`exports["./client"]` 被打进包并且在真实 Web 宿主加载。
 
-### E1 宿主看图（历史验证，仍有效）
+### E1 宿主看图
 
 - `shijie_e1_image_probe` 生成确定性 PNG，经 `ctx.attachments.saveImage` 转为 `ImageBlock` 返回给模型；512×384 与 2048×1536 两种尺寸的模型坐标与真值误差分别不超过 1 和 2 像素，宿主未缩图。
+- 3200×1800（超过 2048 单边）实测：宿主把图片以 2730×1536 预览图交给模型（约 85.3% 比例），模型明确识别“工具标注原图 3200×1800、实际看到 2730×1536”，按比例换算到原图坐标后与真值最大误差约 2 像素，三个形状均清晰可辨。结论：>2048 图片会被宿主缩图，但模型能根据工具返回的原始尺寸换算坐标；该结论只对本模型/宿主组合有效。
 - 结论只对 `magpie-responses` / `codex/gpt-6.1-sol` 这个声明了 `input: [text, image]` 的模型成立；E1 用合成图，不是航拍素材。
 
 ## NOT_RUN（没有验证，不能当作通过）
@@ -65,7 +66,7 @@ M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 - 真实渠道（YouTube、Bilibili、Commons、Flickr 等）的搜索、来源核实、下载、许可证判断和真实下载失败处理；本轮不联网、不登录、不下载素材。
 - 用户业务验收：真实供给、审核流程、反馈返工、导出和数据集就绪判定。
 - 设置页在用户日常 profile、无模型凭据 profile、窄屏/深色/高对比度主题、无 `webServer` 宿主和旧版浏览器上的表现；只在默认浅色设置页和隔离临时 web profile 中验证过。
-- 超过 2048×2048 总像素的图片在宿主里的缩图行为和坐标表现。
+- 超过 4096×4096 总像素的图片、极端纵横比图片在宿主里的缩图行为和坐标表现；3200×1800 已验证（见 E1 宿主看图）。
 - 对全部 job kind 的崩溃恢复：只测试了 `media.acquire` 的 worker 进程退出；`media.probe`/`media.overview`/`media.sample` 只通过直接执行测试，没有逐个做 kill 后恢复。
 - Linux / macOS；Node 22 与 Node 24 之外的版本；DSH 0.3 或 alpha 版本。
 - 大任务、多轮对话下的参数填写质量与上下文/缓存表现。

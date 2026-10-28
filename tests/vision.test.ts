@@ -29,6 +29,19 @@ describe('E1 image probe', () => {
     expect(first.shapes[0]!.box.top).toBeLessThan(first.shapes[2]!.box.top)
   })
 
+  it('draws a probe larger than 2048 pixels per side', () => {
+    const { png, shapes } = drawProbe(3200, 1800)
+    expect(Buffer.from(png).readUInt32BE(16)).toBe(3200)
+    expect(Buffer.from(png).readUInt32BE(20)).toBe(1800)
+    expect(shapes).toHaveLength(3)
+    for (const shape of shapes) {
+      expect(shape.box.left).toBeGreaterThanOrEqual(0)
+      expect(shape.box.top).toBeGreaterThanOrEqual(0)
+      expect(shape.box.right).toBeLessThan(3200)
+      expect(shape.box.bottom).toBeLessThan(1800)
+    }
+  })
+
   it('saves the image and renders a real image content block', async () => {
     const saved: Array<{ width: number; height: number; mediaType: string }> = []
     const attachments: VisionAttachments = {
@@ -59,7 +72,7 @@ describe('E1 image probe', () => {
     const [tool] = createVisionTools(() => attachments)
     const value = (await tool!.execute!({ width: 64, height: 64 }, {} as never)) as { width: number; height: number }
     expect(value).toEqual(expect.objectContaining({ width: 64, height: 64 }))
-    await expect(tool!.execute!({ width: 63 }, {} as never)).rejects.toThrow('between 64 and 2048')
+    await expect(tool!.execute!({ width: 63 }, {} as never)).rejects.toThrow('between 64 and 4096')
   })
 
   it('fails clearly when no host attachment service exists', async () => {

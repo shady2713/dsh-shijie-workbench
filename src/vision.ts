@@ -145,8 +145,8 @@ export function drawProbe(width: number, height: number): { png: Uint8Array; sha
 
 function numberArg(value: unknown, fallback: number): number {
   if (value === undefined) return fallback
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 64 || value > 2048) {
-    throw new Error('width and height must be integers between 64 and 2048')
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 64 || value > 4096) {
+    throw new Error('width and height must be integers between 64 and 4096')
   }
   return value
 }
@@ -162,8 +162,8 @@ export function createVisionTools(getAttachments: () => VisionAttachments | unde
       description:
         'E1 diagnostic: return one generated test image. Report every coloured shape you actually see, including its colour, shape type and pixel bounding box (origin top-left).',
       parameters: {
-        width: { type: 'number', description: 'Image width in pixels, 64-2048 (default 512)' },
-        height: { type: 'number', description: 'Image height in pixels, 64-2048 (default 384)' },
+        width: { type: 'number', description: 'Image width in pixels, 64-4096 (default 512)' },
+        height: { type: 'number', description: 'Image height in pixels, 64-4096 (default 384)' },
       },
       output: {
         schema: {
