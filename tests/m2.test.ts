@@ -217,6 +217,7 @@ describe('media jobs', () => {
       const quality = JSON.parse(String(frame.quality_json))
       expect(quality.trigger).toBeTruthy()
       expect(quality.selection_version).toBe('m2-change-v1')
+      expect(quality.analysis_fps).toBe(1)
       expect(typeof quality.change_score).toBe('number')
       expect(typeof quality.scene_cut_score).toBe('number')
       expect(existsSync(join(dir, String(wb.store.get<any>('select relative_path from artifacts where artifact_id=?', frame.artifact_id).relative_path)))).toBe(true)

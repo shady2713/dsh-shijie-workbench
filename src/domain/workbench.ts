@@ -796,7 +796,7 @@ export class Workbench {
       const pixelSha = sha256Hex(bytes)
       const quality = {
         selection_version: 'm2-change-v1',
-        analysis_fps: 5,
+        analysis_fps: analysis.fps,
         change_score: selected.change_score,
         scene_cut_score: selected.scene_cut_score,
         trigger: selected.trigger,
@@ -841,7 +841,7 @@ export class Workbench {
     const segmentStart = Math.max(0, Math.round((startS - probe.start_time_s) / (timeBase.num / timeBase.den)))
     const segmentEnd = Math.max(segmentStart, Math.round((endS - probe.start_time_s) / (timeBase.num / timeBase.den)))
     const coverage = [
-      { kind: 'DECODED', json: { ranges: [{ start_s: startS, end_s: endS }], analysis_fps: 5, analyzed_frames: rangeFrames.length, decoded_frames: analysis.frames.length }, suffix: 'DECODED' },
+      { kind: 'DECODED', json: { ranges: [{ start_s: startS, end_s: endS }], analysis_fps: analysis.fps, analyzed_frames: rangeFrames.length, decoded_frames: analysis.frames.length }, suffix: 'DECODED' },
       ...selection.selected.map((s: SelectedFrame) => ({
         kind: 'SAMPLED',
         json: { frame_id: frameIds[selection.selected.indexOf(s)], time_s: s.time_s, trigger: s.trigger, change_score: s.change_score, similarity_group_id: null },
@@ -876,7 +876,7 @@ export class Workbench {
           `insert or ignore into segments(segment_id,task_id,media_id,stream_index,start_pts,end_pts,time_base_num,time_base_den,evidence_mode,evidence_json)
            values (?,?,?,?,?,?,?,?, 'SAMPLED_OBSERVATIONS', ?)`,
           segmentId, taskId, media.media_id, probe.primary.index, segmentStart, segmentEnd, timeBase.num, timeBase.den,
-          JSON.stringify({ source: 'media.overview', selection_mode: adaptive ? 'change' : 'fixed_interval_fallback', analysis_fps: 5 }),
+          JSON.stringify({ source: 'media.overview', selection_mode: adaptive ? 'change' : 'fixed_interval_fallback', analysis_fps: analysis.fps }),
         )
         for (const row of frameRows) {
           if (!row.existing) {

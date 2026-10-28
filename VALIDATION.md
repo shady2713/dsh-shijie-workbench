@@ -49,7 +49,7 @@ M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 
 ### 分发包（仅本地验证）
 
-- `npm run pack` 成功生成 `dist/dsh-shijie-workbench-0.1.4.tgz`（84.6 KB，33 个文件，包含 `lib/`、`contracts/`、`skills/`、`client.js`、`cordis.patch.yml`，不包含 `node_modules`）。
+- `npm run pack` 成功生成 `dist/dsh-shijie-workbench-0.1.5.tgz`（84.6 KB，33 个文件，包含 `lib/`、`contracts/`、`skills/`、`client.js`、`cordis.patch.yml`，不包含 `node_modules`）。
 - 在干净临时目录执行 `npm install <tarball>` 成功；`import('dsh-shijie-workbench')` 返回 `Config, apply, inject, name` 四个导出。
 - 在临时 `DSH_HOME` 的 `packhead` profile 里 `dsh plugin --profile packhead add <tarball>` 成功；因该临时 profile 没有模型凭据，未完成真实模型工具调用，这一项不算宿主运行验证。
 - `0.1.3` tarball 在另一临时 `DSH_HOME` 的 `rescue` web profile 安装后启动成功：`GET /api/shijie-workbench/status` 返回 200、schema 1.3；Playwright 设置对话框显示“视界工作台”页面和只读概览。证明 `client.js`、`dsh.client`、`exports["./client"]` 被打进包并且在真实 Web 宿主加载。`0.1.4` 工作区构建在同一 `rescue` profile（link）启动后，同一路由返回 200、schema 1.3；0.1.4 只调整默认阈值与版本号，未重复 Playwright 页面检查。
@@ -63,13 +63,14 @@ M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 ### 真实航拍素材程序验证（用户提供的本地文件，不是互联网素材）
 
 - 素材：`C:\Users\64576\Desktop\00_共同输入_1080p30.mp4`，30.0 秒，1920×1080，H.264，30/1 fps，CFR，`start_time=0`，900 帧；复制到隔离临时 `dataDir/inbox` 后执行 M2 全链路，没有使用用户日常 profile，也没有把视频提交到仓库。
-- `media.acquire`/`media.probe`/`media.overview` 均成功；`media` 的 sha256 与 media artifact 的 sha256 一致、文件存在且字节数一致；采用默认参数的 7 个 frame artifact 全部存在且 sha256 与数据库记录一致（此前校准运行产生 14 个帧产物，也已逐个校验）。
-- 初始默认参数（`change_threshold=0.35`、`scene_cut_threshold=0.30`，已替换）：150 个 5 fps 分析帧，保留 3 帧（0/10/20 秒，FIRST_FRAME + 2×MAX_INTERVAL）；相对固定 1 秒间隔基线 30 帧减少 90%。scdet 候选切点 4 个（0.2s=0.0723、0.6s=0.2057、1.0s=0.0420、16.8s=0.0353）均低于 0.30，未按 SCENE_CUT 保留。
-- 采用的默认参数（`change_threshold=0.35`、`scene_cut_threshold=0.03`）：保留 7 帧（0/0.2/0.6/1.0/11.0/16.8/26.8 秒；FIRST_FRAME + 4×SCENE_CUT + 2×MAX_INTERVAL）；相对固定 1 秒间隔 30 帧少 23 帧（-76.7%）。4 个 scdet 候选切点全部以 SCENE_CUT 保留，漏切点 0。
-- 校准参考（`change_threshold=0.12`、`scene_cut_threshold=0.03`）：保留 14 帧（0/0.2/0.6/1/1.6/2.2/2.8/3.4/6/10.4/15.4/16.8/23.2/29.4 秒）；相对固定 1 秒间隔 30 帧少 16 帧（-53%），可作为需要更多画面变化细节时的备选。
+- `media.acquire`/`media.probe`/`media.overview` 均成功；`media` 的 sha256 与 media artifact 的 sha256 一致、文件存在且字节数一致；采用当前默认参数的 5 个 frame artifact 全部存在且 sha256 与数据库记录一致（此前 5 fps 运行产生的 7/14 个帧产物也已逐个校验）。
+- 当前分析采样为 **1 fps**（按批量采集吞吐需求确认）：30 个分析帧，采用默认参数（`change_threshold=0.35`、`scene_cut_threshold=0.03`）保留 5 帧（0/1/11/17/27 秒；FIRST_FRAME + 2×SCENE_CUT + 2×MAX_INTERVAL）；相对固定 1 秒间隔的 30 帧少 25 帧（**-83.3%**）。原始 scdet 候选切点为 0.2s/0.6s/1.0s/16.8s，1 fps 量化后合并为 1s 和 17s 两个 `SCENE_CUT` 帧；0.2/0.6/1.0 秒的连续切点被压缩到一个分析点，这是当前低采样率下接受的精度损失。
+- 历史参考（5 fps 分析、`change_threshold=0.35`、`scene_cut_threshold=0.03`）：保留 7 帧（0/0.2/0.6/1.0/11.0/16.8/26.8 秒，-76.7%）；只作为旧分析配置的对照，不再代表当前默认。
+- 旧初始默认参数（`change_threshold=0.35`、`scene_cut_threshold=0.30`，5 fps，已替换）：保留 3 帧（0/10/20 秒，-90%），4 个 scdet 候选切点均低于 0.30，未按 `SCENE_CUT` 保留。
+- 校准参考（`change_threshold=0.12`、`scene_cut_threshold=0.03`，5 fps）：保留 14 帧（0/0.2/0.6/1/1.6/2.2/2.8/3.4/6/10.4/15.4/16.8/23.2/29.4 秒，-53%）；仅用于证明更低的 change 阈值可以保留更多细节，不作为当前默认。
 - 对象识别抽查：对 11.0 秒帧做人工视觉核对，能清楚辨认道路上一辆蓝白色公交车（原图约 x=895–930、y=920–960），以及多辆白色轿车；M2 没有自动化目标检测工具，这项只证明抽出的帧足够清晰可供后续看图，不代表生产级检测结果。
 - 修复：`media.overview` 的 `scene_cuts` 结果字段此前把 149 条非零 scdet 分数全部计数，已改为只统计 `SCENE_CUT` 入选帧；`plugin/tests/m2.test.ts` 增加了对应断言。
-- 结论：采用默认参数 `change_threshold=0.35`、`scene_cut_threshold=0.03` 后，本片通过“帧数明显少于固定 1 秒间隔且候选切点不漏”；`change_threshold=0.12` 仅作为需要更多画面变化细节时的备选，尚需更多真实素材验证；`similarity_merge_threshold` 未校准（M2 不实现合并）。
+- 结论：当前默认 1 fps 分析 + `change_threshold=0.35`、`scene_cut_threshold=0.03`，本片满足“帧数明显少于固定 1 秒间隔”的吞吐目标；代价是 1 秒内的多个连续切点会合并，适合批量粗筛，不适合精确定位短镜头；`similarity_merge_threshold` 未校准（M2 不实现合并）。
 
 ## NOT_RUN（没有验证，不能当作通过）
 
@@ -92,7 +93,7 @@ M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 
 ## 已知限制
 
-- 变化取帧当前用 5 fps、64×64 灰度差值和 ffmpeg `scdet` 低分辨率分析；它是 §12 第 1 层的第一版，可能漏掉持续时间很短的镜头切换或极小目标变化，阈值需用真实航拍素材校准。`scdet` 对纯色切换不敏感（红→蓝测试片 score=0.0），已改用 testsrc2→黑场测试验证。
+- 变化取帧当前用 1 fps、64×64 灰度差值和 ffmpeg `scdet` 低分辨率分析；它是 §12 第 1 层的第一版，可能漏掉持续时间很短的镜头切换或极小目标变化，阈值需用真实航拍素材校准。`scdet` 对纯色切换不敏感（红→蓝测试片 score=0.0），已改用 testsrc2→黑场测试验证。
 - 相似合并的 `similarity_group_id` 生成规则已按 `simp_` + `sha256(media_id + 排序后的组内 frame_identity_sha256 列表)` 前 16 位写入契约说明；本轮没有导出流水线可实际生成该字段。
 - 复杂请求仍用 `json` 类型承载整份对象（TaskSpec、JobRequest 等），由 Ajv 按 v1.3 契约校验；模型需先 `shijie_contract` 了解字段。
 - `media.acquire` 的本地路径限制在 `dataDir/inbox`，拒绝绝对路径逃逸、`..` 和符号链接；这是测试/本地素材通道，不是互联网下载通道。

@@ -13,7 +13,7 @@ description: 按对象寻找互联网真实航拍视频和航拍照片，用 shi
 
 ## 当前能力（M2 切片）
 
-可用：任务、来源登记与去重、来源格式变体、来源页面核实、拍摄证据建议、质量记录、帧/覆盖/片段/重叠读取、策略请求与规则读取、审核批次与导出只读、反馈读取、证据导入、作业排队与状态、下一步提示；M2 本地作业执行器可执行 `media.acquire`（仅 `dataDir/inbox` 下的本地/测试素材）、`media.probe`、`media.overview`（按画面变化取帧，5 fps 分析）和 `media.sample`（固定时间戳）。宿主看图（E1）已验证通过，但只有测试 profile 开启 `visionProbe` 时才有 `shijie_e1_image_probe` 诊断工具。
+可用：任务、来源登记与去重、来源格式变体、来源页面核实、拍摄证据建议、质量记录、帧/覆盖/片段/重叠读取、策略请求与规则读取、审核批次与导出只读、反馈读取、证据导入、作业排队与状态、下一步提示；M2 本地作业执行器可执行 `media.acquire`（仅 `dataDir/inbox` 下的本地/测试素材）、`media.probe`、`media.overview`（按画面变化取帧，1 fps 分析）和 `media.sample`（固定时间戳）。宿主看图（E1）已验证通过，但只有测试 profile 开启 `visionProbe` 时才有 `shijie_e1_image_probe` 诊断工具。
 
 没有：真实渠道下载/搜索、看图前相似帧合并、按目标选代表、图片规范化、审核页面、导出生成、反馈处理。除上述四类 media 作业外，其他作业会停在 `QUEUED`，`shijie_task_next` 会如实报告 `CAPABILITY_MISSING`。`media.acquire` 只接受本地文件或测试素材，不能把它说成已从互联网下载；M2 不写 `media_origins`，任务与媒体的关联以 `segments` 为准。
 

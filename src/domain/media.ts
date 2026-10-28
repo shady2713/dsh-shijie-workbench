@@ -76,7 +76,7 @@ export interface SelectionResult {
 
 const ANALYSIS_WIDTH = 64
 const ANALYSIS_HEIGHT = 64
-const ANALYSIS_FPS = 5
+export const ANALYSIS_FPS = 1
 const FRAME_BYTES = ANALYSIS_WIDTH * ANALYSIS_HEIGHT
 
 function ratio(text: string | undefined): number {
@@ -219,7 +219,7 @@ function parseScdet(text: string): Map<number, number> {
   return scores
 }
 
-/** Decode at 5 fps into 64x64 gray frames and run ffmpeg scdet on the same source. */
+/** Decode at 1 fps into 64x64 gray frames and run ffmpeg scdet on the same source. */
 export async function analyzeVideo(ffmpegPath: string, filePath: string, tempDir: string, startTimeS = 0): Promise<AnalysisResult> {
   mkdirSync(tempDir, { recursive: true })
   const rawPath = join(tempDir, 'analysis-gray.raw')
