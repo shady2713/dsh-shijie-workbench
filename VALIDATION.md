@@ -52,7 +52,7 @@ M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 - `npm run pack` 成功生成 `dist/dsh-shijie-workbench-0.1.4.tgz`（84.6 KB，33 个文件，包含 `lib/`、`contracts/`、`skills/`、`client.js`、`cordis.patch.yml`，不包含 `node_modules`）。
 - 在干净临时目录执行 `npm install <tarball>` 成功；`import('dsh-shijie-workbench')` 返回 `Config, apply, inject, name` 四个导出。
 - 在临时 `DSH_HOME` 的 `packhead` profile 里 `dsh plugin --profile packhead add <tarball>` 成功；因该临时 profile 没有模型凭据，未完成真实模型工具调用，这一项不算宿主运行验证。
-- `0.1.4` tarball 在另一临时 `DSH_HOME` 的 `rescue` web profile 安装后启动成功：`GET /api/shijie-workbench/status` 返回 200、schema 1.3；Playwright 设置对话框显示“视界工作台”页面和只读概览。证明 `client.js`、`dsh.client`、`exports["./client"]` 被打进包并且在真实 Web 宿主加载。
+- `0.1.3` tarball 在另一临时 `DSH_HOME` 的 `rescue` web profile 安装后启动成功：`GET /api/shijie-workbench/status` 返回 200、schema 1.3；Playwright 设置对话框显示“视界工作台”页面和只读概览。证明 `client.js`、`dsh.client`、`exports["./client"]` 被打进包并且在真实 Web 宿主加载。`0.1.4` 工作区构建在同一 `rescue` profile（link）启动后，同一路由返回 200、schema 1.3；0.1.4 只调整默认阈值与版本号，未重复 Playwright 页面检查。
 
 ### E1 宿主看图
 
