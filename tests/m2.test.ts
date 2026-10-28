@@ -211,6 +211,7 @@ describe('media jobs', () => {
     const triggers = frames.map((frame) => JSON.parse(String(frame.quality_json)).trigger)
     expect(triggers).toContain('FIRST_FRAME')
     expect(triggers).toContain('SCENE_CUT')
+    expect(Number(ovRun[0]!.result.scene_cuts)).toBe(triggers.filter((trigger) => trigger === 'SCENE_CUT').length)
     for (const frame of frames) {
       const quality = JSON.parse(String(frame.quality_json))
       expect(quality.trigger).toBeTruthy()

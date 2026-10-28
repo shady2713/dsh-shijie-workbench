@@ -858,7 +858,7 @@ export class Workbench {
         analyzed_frames: rangeFrames.length,
         decoded_frames: analysis.frames.length,
         kept_frames: selection.selected.length,
-        scene_cuts: rangeAnalysis.scene_cuts.length,
+        scene_cuts: selection.selected.filter((selected) => selected.trigger === 'SCENE_CUT').length,
         truncated: selection.truncated,
         frame_ids: frameIds,
       },

@@ -1,6 +1,6 @@
 {
   "name": "dsh-shijie-workbench",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Shijie aerial footage and photo sourcing workbench as a DeepSeek Harness plugin (M2 slice).",
   "license": "UNLICENSED",
   "private": true,
