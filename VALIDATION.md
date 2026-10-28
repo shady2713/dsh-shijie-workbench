@@ -11,7 +11,7 @@
 - `npm install`：完成，`prepare` 触发的 `npm run build` 通过。
 - `npm run typecheck`：通过。
 - `npm run build`：通过。
-- `npm test`：6 个测试文件、61 项全部通过（vision 5、plugin 6、agent_tools 15、domain 21、m2 9、m2-sampling 5），耗时约 3.5 秒；无失败，只有 `node:sqlite` 的 ExperimentalWarning。
+- `npm test`：8 个测试文件、64 项全部通过（vision 5、plugin 6、agent_tools 15、domain 22、m2 9、m2-sampling 5、client 1、dashboard-route 1），耗时约 3 秒；无失败，只有 `node:sqlite` 的 ExperimentalWarning。
 
 M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 
@@ -25,13 +25,19 @@ M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 8. 崩溃恢复：`tests/fixtures/crash-worker.ts` 领取 `media.acquire` 后直接退出（`jobs.status=RUNNING`、`claim_generation=1`）；把租约强制过期后再次 `runJobs(1)` 重认领并成功（attempt=2、`claim_generation=2`），`media` 与 media artifact 各 1 行、文件字节和 sha256 一致；再次运行返回空数组，证明不会重复产出。
 9. `m2-sampling.test.ts` 的 5 个纯函数测试：最小间隔（变化在 0.2/0.4 秒不保留、到 0.6 秒才保留）、静止场景按最大间隔保留、场景切换绕过最小间隔、候选数截断、v1.2 固定间隔回退。
 
+设置页新增 3 项测试：
+
+- `tests/domain.test.ts` 的 `dashboard`：任务/作业计数、状态分组、最近列表和至少 2 条审计事件，重复调用结果一致。
+- `tests/dashboard-route.test.ts`：在真实 Cordis Context 中提供假 `webServer`，断言注册 exact `/api/shijie-workbench/status`；GET 返回 200 JSON（schema 1.3、SQLite 文件名），POST 返回 405。
+- `tests/client.test.ts`：用 `node:vm` 执行 `client.js`，断言模块 id、`inject:['slots']`、`settings.section` 的 id/order 95/中文 label。
+
 ### 程序测试（rc.3 临时副本）
 
 在 `%TEMP%\shijie-rc3-check` 复制工作区（不含 `node_modules`、`lib`、`.tmp-media`），只把 `@deepseek-ai/dsh-skill`、`@deepseek-ai/dsh-system-prompt`、`@deepseek-ai/dsh-tools` 的 devDependencies 改为 `0.2.1-rc.3`，删除临时副本的 lockfile 后重新 `npm install`：
 
 - `npm install`：成功，`prepare` 触发的 build 通过。
 - `npm run typecheck`：通过。
-- `npm test`：6 个测试文件、61 项全部通过（vision 5、plugin 6、agent_tools 15、domain 21、m2 9、m2-sampling 5）。
+- `npm test`：8 个测试文件、64 项全部通过（vision 5、plugin 6、agent_tools 15、domain 22、m2 9、m2-sampling 5、client 1、dashboard-route 1）。
 - 临时副本不修改工作区 `package.json`/`package-lock.json`。
 
 ### 宿主集成（隔离 profile，未动用户正在用的 profile）
@@ -39,12 +45,14 @@ M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 - 测试 profile：`C:\Users\64576\.dsh\profiles\m15-test`，插件以 `link:E:/xiangmu/03 Video footage acquisition/plugin` 安装，dataDir 指向 `C:/Users/64576/AppData/Local/Temp/shijie-m15-test`。
 - `dsh --profile m15-test --json "只调用 shijie_capabilities 一次..."` 实际加载当前构建并返回：`schema_version: "1.3"`、`job_executor.state: AVAILABLE`（reason 为 “M2 local executor: SQLite queue with claim leases, claim_generation, heartbeat and transactional completion; media jobs run in-process”）、`ffmpeg`/`ffprobe` AVAILABLE、`reviewer_surface` UNSUPPORTED、`host_vision` AVAILABLE。
 - 插件加载测试在真实 Cordis Context（真实 ToolRuntime、SkillRegistry、SystemPrompt）里加载插件：36 个 `shijie_*` 业务工具经真实工具管线执行，参数校验、输出 schema 校验、信封失败、技能注册均通过；工具集中没有 reviewer 操作或用户决定入口。`visionProbe: true` 时另注册 E1 诊断工具。
+- 设置页（视界工作台）宿主集成：在隔离临时 `DSH_HOME`（`C:\Users\64576\AppData\Local\Temp\dsh-home-web-test`）用默认 web 模板创建 `rescue` profile 并安装本插件，`dsh --profile rescue --host 127.0.0.1 --port 53889 --no-open` 启动后：`GET /api/shijie-workbench/status` 返回 200、`application/json; charset=utf-8`、schema 1.3；Playwright 打开设置对话框，侧栏出现“视界工作台”，页面显示任务/作业/媒体/帧/取样/审核导出卡片与最近列表，底部显示“SQLite 本地库 · schema 1.3”。该验证使用临时 profile，未改用户正在用的 profile。
 
 ### 分发包（仅本地验证）
 
-- `npm run pack` 成功生成 `dist/dsh-shijie-workbench-0.1.0.tgz`（约 78 KB，32 个文件，包含 `lib/`、`contracts/`、`skills/`、`cordis.patch.yml`，不包含 `node_modules`）。
+- `npm run pack` 成功生成 `dist/dsh-shijie-workbench-0.1.1.tgz`（84.4 KB，33 个文件，包含 `lib/`、`contracts/`、`skills/`、`client.js`、`cordis.patch.yml`，不包含 `node_modules`）。
 - 在干净临时目录执行 `npm install <tarball>` 成功；`import('dsh-shijie-workbench')` 返回 `Config, apply, inject, name` 四个导出。
 - 在临时 `DSH_HOME` 的 `packhead` profile 里 `dsh plugin --profile packhead add <tarball>` 成功；因该临时 profile 没有模型凭据，未完成真实模型工具调用，这一项不算宿主运行验证。
+- `0.1.1` tarball 在另一临时 `DSH_HOME` 的 `rescue` web profile 安装后启动成功：`GET /api/shijie-workbench/status` 返回 200、schema 1.3；Playwright 设置对话框显示“视界工作台”页面和只读概览。证明 `client.js`、`dsh.client`、`exports["./client"]` 被打进包并且在真实 Web 宿主加载。
 
 ### E1 宿主看图（历史验证，仍有效）
 
@@ -56,6 +64,7 @@ M1.5 原有的 47 项测试全部保留并通过。M2 新增 14 项测试：
 - 真实航拍素材验收：工作区没有真实航拍视频，也没有 jpg/png；程序测试用的合成视频由测试运行时在临时目录生成，验证后已清理，不留测试素材。因此“1–2 段真实航拍小片、帧数明显少于固定间隔且不漏镜头切换”未运行；`change_threshold`、`scene_cut_threshold`、`similarity_merge_threshold` 都没有用真实素材校准。合成片不能冒充互联网素材。
 - 真实渠道（YouTube、Bilibili、Commons、Flickr 等）的搜索、来源核实、下载、许可证判断和真实下载失败处理；本轮不联网、不登录、不下载素材。
 - 用户业务验收：真实供给、审核流程、反馈返工、导出和数据集就绪判定。
+- 设置页在用户日常 profile、无模型凭据 profile、窄屏/深色/高对比度主题、无 `webServer` 宿主和旧版浏览器上的表现；只在默认浅色设置页和隔离临时 web profile 中验证过。
 - 超过 2048×2048 总像素的图片在宿主里的缩图行为和坐标表现。
 - 对全部 job kind 的崩溃恢复：只测试了 `media.acquire` 的 worker 进程退出；`media.probe`/`media.overview`/`media.sample` 只通过直接执行测试，没有逐个做 kill 后恢复。
 - Linux / macOS；Node 22 与 Node 24 之外的版本；DSH 0.3 或 alpha 版本。

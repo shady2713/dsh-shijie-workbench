@@ -247,6 +247,24 @@ describe('jobs and next action', () => {
   })
 })
 
+describe('dashboard', () => {
+  it('returns read-only counts and recent rows without changing state', () => {
+    const wb = newWorkbench()
+    const id = wb.createTask(activeSpec(), 'agent').summary.task_id
+    wb.submitJob({ task_id: id, kind: 'search.plan', client_request_id: 'dash-1', input: { feedback_ids: [] } }, 'agent')
+
+    const first = wb.dashboard()
+    const second = wb.dashboard()
+    expect(first.schema_version).toBe('1.3')
+    expect(first.totals).toMatchObject({ tasks: 1, tasks_active: 1, jobs: 1, jobs_live: 1, media: 0, frames: 0 })
+    expect(first.job_status).toMatchObject({ QUEUED: 1 })
+    expect(first.recent_tasks[0]).toMatchObject({ task_id: id, name: 'test task', status: 'READY' })
+    expect(first.recent_jobs[0]).toMatchObject({ task_id: id, kind: 'search.plan', status: 'QUEUED', attempt: 0, max_attempts: 3 })
+    expect(first.recent_events.length).toBeGreaterThanOrEqual(2)
+    expect(second.totals).toEqual(first.totals)
+  })
+})
+
 describe('capabilities', () => {
   it('reports unimplemented parts as unsupported or unconfigured', async () => {
     const wb = newWorkbench()

@@ -1,4 +1,4 @@
-# dsh-shijie-workbench v0.1（M2 切片）
+# dsh-shijie-workbench v0.1.1（M2 切片 + 设置页）
 
 视界工作台的 DeepSeek Harness（DSH）原生插件。规格来源是 `shijie_workbench_v1_2`；`contracts/` 已按 v1.3 取帧契约升级（`schemas.json`、`task.template.yaml`、`operation_catalog.yaml`、`workflow.yaml`、`schema.sql` 及 `1.2-to-1.3` 迁移）。
 
@@ -40,10 +40,10 @@ npm run build
 npm run pack
 ```
 
-把 `plugin/dist/dsh-shijie-workbench-0.1.0.tgz` 复制到目标电脑，在目标电脑执行：
+把 `plugin/dist/dsh-shijie-workbench-0.1.1.tgz` 复制到目标电脑，在目标电脑执行：
 
 ```
-dsh plugin --profile <profile> add <路径>/dsh-shijie-workbench-0.1.0.tgz
+dsh plugin --profile <profile> add <路径>/dsh-shijie-workbench-0.1.1.tgz
 ```
 
 目标电脑需要 DSH `>=0.2.1-rc.2 <0.3.0`，并有一个包含 DSH 基础包的 profile；ffmpeg/ffprobe 需在 PATH 中，或通过 `ffmpegPath`/`ffprobePath` 配置。tarball 已包含 `lib/`、`contracts/`、`skills/` 和 `cordis.patch.yml`，不会包含 `node_modules`；`ajv`、`yaml` 等运行依赖由 pnpm 安装。当前 `package.json` 是 `private: true`，因此默认用 tarball/私有 registry 分发，不发布到公共 npm。安装后启动该 profile，调用 `shijie_capabilities` 应返回 `schema_version: "1.3"` 和 `job_executor.state: "AVAILABLE"`。
@@ -51,6 +51,12 @@ dsh plugin --profile <profile> add <路径>/dsh-shijie-workbench-0.1.0.tgz
 配置项：`dataDir`、`mode`（assisted / unattended）、`ffmpegPath`、`ffprobePath`、`journal`（AUTO / DELETE / WAL）、`evidenceMaxBytes`（导入证据大小上限，默认 20 MiB）、`visionProbe`（默认 false）。AUTO 只在 SQLite 带 WAL-reset 修复时启用 WAL。`visionProbe: true` 时另注册 E1 诊断工具 `shijie_e1_image_probe`，它只在宿主提供 attachments 服务时可用；生产配置建议保持 false。
 
 注意：存储用 Node 内置 `node:sqlite`，它在当前 Node 版本里仍是实验特性，启动时会有 ExperimentalWarning。
+
+## 设置页
+
+插件在 Web GUI 的“设置”侧栏注册“视界工作台”页面（`settings.section`，order 95）。页面是只读工作台概览：任务/作业/媒体/帧/取样与审核导出计数、最近任务/作业/媒体/审计事件，以及数据库文件和大小。页面通过宿主 `webServer` 的 `GET /api/shijie-workbench/status` 读取当前 profile 的 SQLite；不会新增审核入口或写数据库。浏览器端每 5 秒刷新一次。
+
+该页面需要宿主提供 `webServer` 服务（DSH Web GUI 默认提供）；如果宿主没有该服务，插件的业务工具仍可使用，只是不注册这个页面路由。
 
 ## 工具（36 个业务工具 + 1 个 E1 诊断工具）
 
@@ -94,6 +100,7 @@ operation_catalog 里仅限 reviewer 的操作都不是工具：审核决定、�
 
 ```
 src/            插件源码（config、store、contracts、domain、tools、vision、index）
+client.js       Web GUI 设置页客户端模块
 contracts/      v1.3 契约（含 migrations/1.2-to-1.3.sql）
 skills/         随插件注册的 SKILL
 tests/          vitest（含 fixtures/crash-worker.ts）

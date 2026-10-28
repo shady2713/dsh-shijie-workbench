@@ -1,6 +1,6 @@
 {
   "name": "dsh-shijie-workbench",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shijie aerial footage and photo sourcing workbench as a DeepSeek Harness plugin (M2 slice).",
   "license": "UNLICENSED",
   "private": true,
@@ -17,12 +17,14 @@
       "types": "./lib/index.d.ts",
       "default": "./lib/index.js"
     },
+    "./client": "./client.js",
     "./package.json": "./package.json"
   },
   "files": [
     "lib",
     "contracts",
     "skills",
+    "client.js",
     "cordis.patch.yml"
   ],
   "engines": {
@@ -32,6 +34,13 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
     }
   },
   "scripts": {

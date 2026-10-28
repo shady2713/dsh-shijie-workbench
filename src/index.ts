@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import { join } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-skill'
@@ -13,6 +14,14 @@ import { createVisionTools, type VisionAttachments } from './vision.ts'
 export const name = 'shijie-workbench'
 export const inject = ['tools', 'skills']
 export { Config }
+
+interface WebServerLike {
+  register(route: {
+    kind: 'exact' | 'prefix'
+    path: string
+    handler: (req: IncomingMessage, res: ServerResponse) => void | Promise<void>
+  }): () => void
+}
 
 const SKILL_URL = new URL('../skills/shijie-workbench/SKILL.md', import.meta.url)
 
@@ -38,6 +47,40 @@ export function apply(ctx: Context, config: Config): void {
   })
 
   for (const definition of createTools(workbench)) ctx.tools.register(definition)
+
+  // The settings page is a read-only view. Keep it on an exact local route so
+  // the client never needs write access to the SQLite database.
+  ctx.inject(['webServer'], (scope) => {
+    const webServer = (scope as unknown as { webServer: WebServerLike }).webServer
+    webServer.register({
+      kind: 'exact',
+      path: '/api/shijie-workbench/status',
+      handler: (req, res) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          res.writeHead(405, { allow: 'GET, HEAD' })
+          res.end()
+          return
+        }
+        try {
+          const body = JSON.stringify(workbench.dashboard())
+          res.writeHead(200, {
+            'content-type': 'application/json; charset=utf-8',
+            'cache-control': 'no-store',
+            'x-content-type-options': 'nosniff',
+          })
+          if (req.method === 'HEAD') res.end()
+          else res.end(body)
+        } catch {
+          res.writeHead(500, {
+            'content-type': 'application/json; charset=utf-8',
+            'cache-control': 'no-store',
+            'x-content-type-options': 'nosniff',
+          })
+          res.end(JSON.stringify({ status: 'ERROR', code: 'DASHBOARD_UNAVAILABLE' }))
+        }
+      },
+    })
+  })
 
   if (config.visionProbe !== false) {
     // The attachments service is optional for business tools; the E1 probe only

@@ -3,7 +3,7 @@ import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, realpathS
 import { fileURLToPath } from 'node:url'
 import { basename, extname, isAbsolute, join, relative, resolve } from 'node:path'
 import { promisify } from 'node:util'
-import type { Contracts } from '../contracts.ts'
+import { CONTRACT_VERSION, type Contracts } from '../contracts.ts'
 import { Store, mapConstraint } from '../store.ts'
 import { DomainError, canonicalJson, canonicalUrlKey, newId, nowIso, sha256Hex, type Json } from '../util.ts'
 import { JobExecutor, type ArtifactDraft, type ClaimedJob } from './executor.ts'
@@ -1651,6 +1651,110 @@ export class Workbench {
     if (navigation.includes('MATCH')) return 'NOT_CHECKED'
     if (navigation.includes('MISMATCH')) return 'MISMATCH'
     return 'NOT_CHECKED'
+  }
+
+  /**
+   * Read-only snapshot for the settings dashboard. This deliberately exposes
+   * counts and recent identifiers, never review decisions or write operations.
+   */
+  dashboard(recentLimit = 6): Dict {
+    const limit = Math.max(1, Math.min(20, Math.trunc(recentLimit)))
+    const number = (value: unknown): number => Number(value ?? 0)
+    const taskCounts = this.store.get<Dict>(
+      `select count(*) as total,
+              coalesce(sum(case when status not in ('CLOSED_COMPLETE','CLOSED_PARTIAL','CANCELLED') then 1 else 0 end), 0) as active
+       from tasks`,
+    ) ?? {}
+    const jobCounts = this.store.get<Dict>(
+      `select count(*) as total,
+              coalesce(sum(case when status in ('QUEUED','RUNNING','WAITING_AGENT','WAITING_APPROVAL') then 1 else 0 end), 0) as live
+       from jobs`,
+    ) ?? {}
+    const mediaCounts = this.store.get<Dict>(
+      `select count(*) as total,
+              coalesce(sum(case when media_kind='VIDEO' then 1 else 0 end), 0) as videos,
+              coalesce(sum(case when media_kind='IMAGE' then 1 else 0 end), 0) as images
+       from media`,
+    ) ?? {}
+    const frameCount = this.store.get<Dict>('select count(*) as total from frames') ?? {}
+    const coverageCounts = this.store.get<Dict>(
+      `select count(*) as total,
+              coalesce(sum(case when kind='SAMPLED' then 1 else 0 end), 0) as sampled,
+              coalesce(sum(case when kind in ('VISUALLY_REVIEWED','HUMAN_REVIEWED') then 1 else 0 end), 0) as reviewed
+       from coverage_events`,
+    ) ?? {}
+    const reviewCounts = this.store.get<Dict>(
+      `select count(*) as total,
+              coalesce(sum(case when status='OPEN' then 1 else 0 end), 0) as open
+       from review_batches`,
+    ) ?? {}
+    const exportCount = this.store.get<Dict>('select count(*) as total from exports') ?? {}
+    const jobStatus: Record<string, number> = {}
+    for (const row of this.store.all<Dict>('select status, count(*) as count from jobs group by status order by status')) {
+      jobStatus[String(row.status)] = number(row.count)
+    }
+
+    const recentTasks = this.store.all<Dict>(
+      `select task_id, name, status, current_revision, updated_at
+       from tasks order by updated_at desc, rowid desc limit ?`,
+      limit,
+    )
+    const recentJobs = this.store.all<Dict>(
+      `select j.job_id, j.task_id, j.kind, j.status, j.attempt, j.max_attempts, j.error_code, j.updated_at,
+              t.name as task_name
+       from jobs j left join tasks t on t.task_id=j.task_id
+       order by j.updated_at desc, j.rowid desc limit ?`,
+      limit,
+    )
+    const recentMedia = this.store.all<Dict>(
+      `select media_id, media_kind, state, width, height, duration_s, created_at
+       from media order by created_at desc, rowid desc limit ?`,
+      limit,
+    )
+    const recentEvents = this.store.all<Dict>(
+      `select event_id, actor_id, event_type, entity_type, entity_id, created_at
+       from audit_events order by created_at desc, rowid desc limit ?`,
+      limit,
+    )
+
+    let databaseBytes: number | null = null
+    try {
+      const file = join(this.dataDir, 'workbench.sqlite')
+      if (existsSync(file)) databaseBytes = statSync(file).size
+    } catch {
+      databaseBytes = null
+    }
+
+    return {
+      schema_version: CONTRACT_VERSION,
+      generated_at: nowIso(),
+      database: {
+        file_name: 'workbench.sqlite',
+        size_bytes: databaseBytes,
+        journal_mode: this.store.journalMode,
+      },
+      totals: {
+        tasks: number(taskCounts.total),
+        tasks_active: number(taskCounts.active),
+        jobs: number(jobCounts.total),
+        jobs_live: number(jobCounts.live),
+        media: number(mediaCounts.total),
+        videos: number(mediaCounts.videos),
+        images: number(mediaCounts.images),
+        frames: number(frameCount.total),
+        coverage_events: number(coverageCounts.total),
+        sampled_events: number(coverageCounts.sampled),
+        reviewed_events: number(coverageCounts.reviewed),
+        review_batches: number(reviewCounts.total),
+        open_review_batches: number(reviewCounts.open),
+        exports: number(exportCount.total),
+      },
+      job_status: jobStatus,
+      recent_tasks: recentTasks,
+      recent_jobs: recentJobs,
+      recent_media: recentMedia,
+      recent_events: recentEvents,
+    }
   }
 
   private readonly dataDir: string
